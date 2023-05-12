@@ -1,5 +1,4 @@
 #include<opencv2/opencv.hpp>
-//#include <cstdlib>
 #include <bits/stdc++.h>
 #include<stdio.h>
 
