@@ -8,7 +8,16 @@ struct Key
     char refCh,chgCh;uint8_t code; int mLen; 
 } key;
 
-void getChannels(cv::Mat* img, int len)    //Returns 2 character string containing reference channel and change channel
+/*
+void getChannels(cv::Mat* img, int len):
+
+This method finds out the reference channel and change channel. This method scans the image pixel by pixel through BGR color channels
+and stores the frequency of each color code from 0 to 255 of each color channel. Then finds out the most occuring color code for each 
+color channel and then finds out the max of this 3 channels. The max occuring color code channel will be the reference channel and for
+change channel any of the rest 2 will be selected. At last we verify that the message lenght is less than 8 times of the max count of
+color code. Stores all the values in the structure Key.   
+*/
+void getChannels(cv::Mat* img, int len)
 {
     int maxB=0,maxG=0,maxR=0,vB,vG,vR;
     int counts[3][256];
@@ -93,6 +102,13 @@ int getChannelId(char c)
     }
     return -1;
 }
+
+/*
+std::string appendZeros(std::string bin):
+
+After conversion of the characters to binary values, at times the length of the generated binary string is less than 8. So to balance 
+it we append preceeding zeros.
+*/
 std::string appendZeros(std::string bin)
 {
     int len = bin.length();
@@ -104,6 +120,12 @@ std::string appendZeros(std::string bin)
     }
     return bin;
 }
+
+/*
+std::string stringToBinary(std::string mes):
+
+Converts the message string to binary values and returns in string format of 0s and 1s.
+*/
 std::string stringToBinary(std::string mes)
 {
     int n = mes.length(),num;
@@ -125,7 +147,15 @@ std::string stringToBinary(std::string mes)
     return fString;
 }
 
+/*
+void storeMessage(cv::Mat* img,char* message):
 
+This methods stores the message in the image. Firtsly converts the string to binary. Then scans the image pixel by pixel. If the color code of the reference channel 
+matches the calculated color code, then make the change in the color code of the change channel. Following is the logic to append the data using lsb technique
+    - If the next value of the message to be store is 0 then we check if the color code that we are operating on is even or odd. If it is odd than do -1 to make it even 
+    and thus the lsb bit becomes 0.
+    - same if the next value of the message is 1, then we check if the color code we are operating is even or odd. If is even, then add 1 to make the lsb bit 1.
+*/
 void storeMessage(cv::Mat* img,char* message)
 {
     bool flag=false;
@@ -180,6 +210,11 @@ int retCount(int num)
     }
     return c;
 }
+/*
+void storeKey(cv::Mat *img):
+
+This method stores the genearted key in the last row of the Image.
+*/
 void storeKey(cv::Mat *img)
 {
     // RF CH Code 
