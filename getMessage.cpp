@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         j++;
     } 
     len*=8;
-    printf("%d",len);
+
     std::string bin;
 
     for(int i = 0; i < img.rows -1; i++)
