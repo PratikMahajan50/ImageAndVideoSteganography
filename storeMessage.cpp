@@ -2,21 +2,6 @@
 #include <bits/stdc++.h>
 #include<stdio.h>
 
-/*
-Algorithm
-
-1. Get the Image
-2. Get the message
-3. Choose the reference channel and change channel
-    a. Depending on the length of the message and the count of the value(0-255) of 3 channels
-    b. change channel could be random between rest of the 2 channels
-    c. store both the channel characters in the Key String
-4. Determine the start index(random), end index and differentiator and store it in the keystring
-5. Store the message in the image
-6. output the image preview and save.
-
-
-*/
 
 struct Key
 {
@@ -65,7 +50,7 @@ void getChannels(cv::Mat* img, int len)    //Returns 2 character string containi
             vR=i;            
         }
     }
-    //Find Max 
+    
     
     int max;
     if(maxB>=maxG && maxB>=maxR)
@@ -97,11 +82,6 @@ void getChannels(cv::Mat* img, int len)    //Returns 2 character string containi
         exit(-1);
     }
     
-    printf("\nReference Channel:  %c",key.refCh);
-    printf("\nChange Channel:  %c",key.chgCh);
-    printf("\nReference Code Number:  %u",key.code);
-    
-    printf("\nMax storable character: : %d",max/8);
 }
 int getChannelId(char c)
 {
@@ -116,7 +96,6 @@ int getChannelId(char c)
 std::string appendZeros(std::string bin)
 {
     int len = bin.length();
-    //printf("%d  ",len);
     if(bin.length()==8)
         return bin;
     for(int i=0;i<8-len;i++)
@@ -133,7 +112,6 @@ std::string stringToBinary(std::string mes)
     for(int i=0;i<n;i++)
     {
         num = int(mes[i]);
-        //printf("%d\n",num);
         bin="";
         while(num>0)
         {
@@ -142,59 +120,24 @@ std::string stringToBinary(std::string mes)
         }
         reverse(bin.begin(),bin.end());
         bin = appendZeros(bin);
-        //std::cout<<bin<<std::endl;
         fString+=bin;
     }
-    std::cout<<fString[0]<<std::endl;
-        
     return fString;
 }
-int bTod(std::string n)
-{
-    std::string num=n;
-    int d=0;
-    int base=1;
-    int len=num.length();
-    for(int i=len-1;i>=0; i--)
-    {
-        if(num[i]=='1')
-            d+=base;
-        base*=2;
-    }
-    return d;
-}
-std::string StringToAscii(std::string str)
-{
-    int n=int(str.size());
-    std::string res="";
-    for(int i=0;i<n;i+=8)
-    {
-        int d = bTod((str.substr(i,8)));
-        res+=char(d);
-    }
-    return res;
-}
+
+
 void storeMessage(cv::Mat* img,char* message)
 {
     bool flag=false;
-    //int sP = 0,ind=0;
+    
     int rchI=getChannelId(key.refCh),cchI=getChannelId(key.chgCh);
-
-    //
-    FILE *file1 = fopen("store.txt","w");
     
     std::string mes = stringToBinary(message);
     message = &mes[0];
-    std::cout<<message;
-    //std::cout<<"String length after converting to binary: "<<std::string(message).length();
-    //std::string newM = StringToAscii(message);
-    //std::cout<<newM;
-    //fprintf(file1,message);
     uint8_t* pData = (uint8_t*) img->data;
     int cn = (*img).channels();
     int k=0;
     int len = std::string(message).length();
-    std::cout<<"\n\n"<<len<<"\n";
     for(int i = 0; i < img->rows -1; i++)
     {
         for(int j = 0; j < img->cols; j++)
@@ -205,27 +148,24 @@ void storeMessage(cv::Mat* img,char* message)
                     {
                         if(pData[i*img->cols*cn + j*cn + cchI]%2==1)
                             pData[i*img->cols*cn + j*cn + cchI]-=1;
-                        fprintf(file1,"0");
                     }
                     else
                     {
                         if(pData[i*img->cols*cn + j*cn + cchI]%2==0)
                             pData[i*img->cols*cn + j*cn + cchI]+=1;
-                        fprintf(file1,"1");
-
                     }
                     k++;
-                    //sP++;
+                    
                     if(k==len)
                     {flag=true;break;}
-                //ind++;
+                
             } 
             
         }
         if(flag)
             break;
     }
-    fclose(file1);
+    
     
 }
 char* encMessage(char* message);
@@ -257,7 +197,6 @@ void storeKey(cv::Mat *img)
     while(j<pData[r*c*cn + 3])
     {
         pData[r*c*cn + i]=((uint8_t)num[j])-48;
-        printf("\n%u",pData[r*c*cn + i]);
         i++;j++;
     }
 
@@ -272,7 +211,7 @@ int main(int argc, char** argv)
         return -1;
     }
     
-    //1.
+    
     cv::Mat image  = cv::imread(argv[1]);
     if(image.empty())
     {
@@ -280,7 +219,7 @@ int main(int argc, char** argv)
         return -1;
     }
     
-    //2.
+    
     FILE *file = fopen(argv[2],"r");
     std::string mes;char c;
     while(1)
@@ -289,17 +228,12 @@ int main(int argc, char** argv)
         if(feof(file)) break;
         mes+=c;
     }
-    std::cout<<mes;
-
-    //3.i
     getChannels(&image,mes.length());
     key.mLen = mes.length();
-    //std::cout<<mes;
+    
     storeMessage(&image,&mes[0]);
-    printf("Length: %d",(int)mes.length());
     storeKey(&image);
     cv::imwrite("Image.png",image);
-    
-    //generateKey();
+    printf("Done\n");
     return 0;
 }
