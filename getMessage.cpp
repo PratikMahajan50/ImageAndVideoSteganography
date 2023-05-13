@@ -1,53 +1,8 @@
-#include<opencv2/opencv.hpp>
-#include<stdio.h>
+#include <opencv2/opencv.hpp>
+#include <stdio.h>
+#include "Stego.h"
 
-using namespace cv;
-using namespace std;
-int retCount(int num)
-{
-    int n= num,c=0;
-    while(num>0)
-    {
-        num=num/10;
-        c++;
-    }
-    return c;
-}
 
-/*
-int bTod(string n):
-Method converts binary data stored in string to Integer data
-*/
-int bTod(string n)
-{
-    string num=n;
-    int d=0;
-    int base=1;
-    int len=num.length();
-    for(int i=len-1;i>=0; i--)
-    {
-        if(num[i]=='1')
-            d+=base;
-        base*=2;
-    }
-    return d;
-}
-
-/*
-string StringToAscii(string str):
-Conerts the string of binary to string of characters 
-*/
-string StringToAscii(string str)
-{
-    int n=int(str.size());
-    string res="";
-    for(int i=0;i<n;i+=8)
-    {
-        int d = bTod((str.substr(i,8)));
-        res+=char(d);
-    }
-    return res;
-}
 int main(int argc, char** argv)
 {
     if(argc != 2)
@@ -55,9 +10,9 @@ int main(int argc, char** argv)
         printf("Usage: %s <ImagePath>\n",argv[0]);
         return -1;
     }
-    Mat img;
+    cv::Mat img;
 
-    img  = imread(argv[1]);
+    img  = cv::imread(argv[1]);
     uint8_t* pData = (uint8_t*)img.data;
     int cn = img.channels();
 
