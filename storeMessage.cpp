@@ -7,15 +7,18 @@ struct Key
 {
     char refCh,chgCh;uint8_t code; int mLen; 
 } key;
-
+struct eVals
+{
+    char ch;uint8_t code;
+};
 /*
 void getChannels(cv::Mat* img, int len):
 
-This method finds out the reference channel and change channel. This method scans the image pixel by pixel through BGR color channels
-and stores the frequency of each color code from 0 to 255 of each color channel. Then finds out the most occuring color code for each 
-color channel and then finds out the max of this 3 channels. The max occuring color code channel will be the reference channel and for
-change channel any of the rest 2 will be selected. At last we verify that the message lenght is less than 8 times of the max count of
-color code. Stores all the values in the structure Key.   
+This method finds out the reference channel and change channel. This method scans the image pixel by pixel through BGR color 
+channels and stores the frequency of each color code from 0 to 255 of each color channel. Then finds out all the codes whose 
+counts are greater than 8 times the message length and stores in a vector<refChannel,code>.If the vector is empty then it 
+means that we cannot store the messsage in this image. Then we choose a random value from this vector which will become the 
+refrance channel and the target color code. Then randomly select the change channel from remaining channel.
 */
 void getChannels(cv::Mat* img, int len)
 {
@@ -41,55 +44,41 @@ void getChannels(cv::Mat* img, int len)
         }
     }
     
+    std::vector<eVals> v;
+    int r=0;
     for(int i=0;i<256;i++)
     {
-        if(maxB<counts[0][i])
+        if(counts[0][i]>=len*8)
         {
-            maxB=counts[0][i];
-            vB=i;            
+            v.push_back((eVals){'B',(uint8_t)i});
+            r++;
         }
-        if(maxG<counts[1][i])
+        if(counts[1][i]>=len*8)
         {
-            maxG=counts[1][i];
-            vG=i;            
+            v.push_back((eVals){'G',(uint8_t)i});
+            r++;
         }
-        if(maxR<counts[2][i])
+        if(counts[2][i]>=len*8)
         {
-            maxR=counts[2][i];
-            vR=i;            
+            v.push_back((eVals){'R',(uint8_t)i});
+            r++;
         }
     }
-    
-    
-    int max;
-    if(maxB>=maxG && maxB>=maxR)
+    if(r==0)
     {
-        key.refCh='B';
-        key.chgCh= (rand()%2)?'G':'R';
-        key.code=(uint8_t)vB;
-        max=maxB;
-    }
-    else if(maxG>=maxB && maxG>=maxR)
-    {
-        key.refCh='G';
-        key.chgCh= (rand()%2)?'B':'R';
-        key.code=(uint8_t)vG;
-        max=maxG;
-    }
-    else
-    {
-        key.refCh='R';
-        key.chgCh= (rand()%2)?'B':'G';
-        key.code=(uint8_t)vR;
-        max=maxR;
-    }
-    
-    
-    if(len>(max/8))
-    {
-        printf("\nMessage Length is too long");
+        printf("\nMessage Length is too long and cannot be embbeded in the image, select a different image");
         exit(-1);
     }
+    
+    //Choose a random from above
+    srand(time(0));
+    r = rand()%r;
+    key.refCh=v[r].ch;
+    key.code=v[r].code;
+
+    if(key.refCh=='B'){key.chgCh=(rand()%2)?'G':'R';}
+    else if(key.refCh=='G'){key.chgCh=(rand()%2)?'B':'R';}
+    else  {key.chgCh=(rand()%2)?'B':'G';}
     
 }
 int getChannelId(char c)
@@ -106,8 +95,8 @@ int getChannelId(char c)
 /*
 std::string appendZeros(std::string bin):
 
-After conversion of the characters to binary values, at times the length of the generated binary string is less than 8. So to balance 
-it we append preceeding zeros.
+After conversion of the characters to binary values, at times the length of the generated binary string is less than 8. So to 
+balance it we append preceeding zeros.
 */
 std::string appendZeros(std::string bin)
 {
@@ -150,11 +139,13 @@ std::string stringToBinary(std::string mes)
 /*
 void storeMessage(cv::Mat* img,char* message):
 
-This methods stores the message in the image. Firtsly converts the string to binary. Then scans the image pixel by pixel. If the color code of the reference channel 
-matches the calculated color code, then make the change in the color code of the change channel. Following is the logic to append the data using lsb technique
-    - If the next value of the message to be store is 0 then we check if the color code that we are operating on is even or odd. If it is odd than do -1 to make it even 
-    and thus the lsb bit becomes 0.
-    - same if the next value of the message is 1, then we check if the color code we are operating is even or odd. If is even, then add 1 to make the lsb bit 1.
+This methods stores the message in the image. Firtsly converts the string to binary. Then scans the image pixel by pixel.
+If the color code of the reference channel matches the calculated color code, then make the change in the color code of 
+the change channel. Following is the logic to append the data using lsb technique
+    - If the next value of the message to be store is 0 then we check if the color code that we are operating on is even 
+      or odd. If it is odd than do -1 to make it even and thus the lsb bit becomes 0.
+    - same if the next value of the message is 1, then we check if the color code we are operating is even or odd. If is 
+      even, then add 1 to make the lsb bit 1.
 */
 void storeMessage(cv::Mat* img,char* message)
 {
