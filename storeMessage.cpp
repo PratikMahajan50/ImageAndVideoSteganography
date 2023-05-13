@@ -6,7 +6,8 @@
 struct Key
 {
     char refCh,chgCh;uint8_t code; int mLen; 
-} key;
+};
+
 struct eVals
 {
     char ch;uint8_t code;
@@ -20,7 +21,7 @@ counts are greater than 8 times the message length and stores in a vector<refCha
 means that we cannot store the messsage in this image. Then we choose a random value from this vector which will become the 
 refrance channel and the target color code. Then randomly select the change channel from remaining channel.
 */
-void getChannels(cv::Mat* img, int len)
+void getChannels(cv::Mat* img, int len, Key* key)
 {
     int maxB=0,maxG=0,maxR=0,vB,vG,vR;
     int counts[3][256];
@@ -73,12 +74,12 @@ void getChannels(cv::Mat* img, int len)
     //Choose a random from above
     srand(time(0));
     r = rand()%r;
-    key.refCh=v[r].ch;
-    key.code=v[r].code;
+    key->refCh=v[r].ch;
+    key->code=v[r].code;
 
-    if(key.refCh=='B'){key.chgCh=(rand()%2)?'G':'R';}
-    else if(key.refCh=='G'){key.chgCh=(rand()%2)?'B':'R';}
-    else  {key.chgCh=(rand()%2)?'B':'G';}
+    if(key->refCh=='B'){key->chgCh=(rand()%2)?'G':'R';}
+    else if(key->refCh=='G'){key->chgCh=(rand()%2)?'B':'R';}
+    else  {key->chgCh=(rand()%2)?'B':'G';}
     
 }
 int getChannelId(char c)
@@ -147,11 +148,11 @@ the change channel. Following is the logic to append the data using lsb techniqu
     - same if the next value of the message is 1, then we check if the color code we are operating is even or odd. If is 
       even, then add 1 to make the lsb bit 1.
 */
-void storeMessage(cv::Mat* img,char* message)
+void storeMessage(cv::Mat* img,char* message,Key* key)
 {
     bool flag=false;
     
-    int rchI=getChannelId(key.refCh),cchI=getChannelId(key.chgCh);
+    int rchI=getChannelId(key->refCh),cchI=getChannelId(key->chgCh);
     
     std::string mes = stringToBinary(message);
     message = &mes[0];
@@ -163,7 +164,7 @@ void storeMessage(cv::Mat* img,char* message)
     {
         for(int j = 0; j < img->cols; j++)
         {
-            if(pData[i*img->cols*cn + j*cn + rchI]==key.code)
+            if(pData[i*img->cols*cn + j*cn + rchI]==key->code)
             {
                     if(message[k]=='0')
                     {
@@ -179,15 +180,12 @@ void storeMessage(cv::Mat* img,char* message)
                     
                     if(k==len)
                     {flag=true;break;}
-                
             } 
             
         }
         if(flag)
             break;
     }
-    
-    
 }
 char* encMessage(char* message);
 
@@ -206,19 +204,19 @@ void storeKey(cv::Mat *img):
 
 This method stores the genearted key in the last row of the Image.
 */
-void storeKey(cv::Mat *img)
+void storeKey(cv::Mat *img, Key* key)
 {
     // RF CH Code 
     // lL lD 
     uint8_t* pData = (uint8_t*) img->data;int r = img->rows -1,c = img->cols;
     int cn = (*img).channels();
-    pData[r*c*cn] = (uint8_t)getChannelId(key.refCh);
-    pData[r*c*cn + 1]=(uint8_t)getChannelId(key.chgCh);
-    pData[r*c*cn + 2]= key.code;
-    pData[r*c*cn + 3] = (uint8_t)retCount(key.mLen);
+    pData[r*c*cn] = (uint8_t)getChannelId(key->refCh);
+    pData[r*c*cn + 1]=(uint8_t)getChannelId(key->chgCh);
+    pData[r*c*cn + 2]= key->code;
+    pData[r*c*cn + 3] = (uint8_t)retCount(key->mLen);
     
     int i=4,j=0;
-    std::string num = std::to_string(key.mLen);
+    std::string num = std::to_string(key->mLen);
     
     while(j<pData[r*c*cn + 3])
     {
@@ -231,6 +229,7 @@ void storeKey(cv::Mat *img)
 
 int main(int argc, char** argv)
 {
+    Key key;
     if(argc != 3)
     {
         printf("Usage: %s <ImagePath> <MessageFilePath>\n",argv[0]);
@@ -254,11 +253,11 @@ int main(int argc, char** argv)
         if(feof(file)) break;
         mes+=c;
     }
-    getChannels(&image,mes.length());
+    getChannels(&image,mes.length(), &key);
     key.mLen = mes.length();
     
-    storeMessage(&image,&mes[0]);
-    storeKey(&image);
+    storeMessage(&image,&mes[0],&key);
+    storeKey(&image,&key);
     cv::imwrite("Image.png",image);
     printf("Done\n");
     return 0;

@@ -13,6 +13,11 @@ int retCount(int num)
     }
     return c;
 }
+
+/*
+int bTod(string n):
+Method converts binary data stored in string to Integer data
+*/
 int bTod(string n)
 {
     string num=n;
@@ -27,6 +32,11 @@ int bTod(string n)
     }
     return d;
 }
+
+/*
+string StringToAscii(string str):
+Conerts the string of binary to string of characters 
+*/
 string StringToAscii(string str)
 {
     int n=int(str.size());
@@ -53,13 +63,14 @@ int main(int argc, char** argv)
 
     bool flag=false;
     int index=0;
-    int sP = 0;int len=0,pVal,diff=0;
+    int sP = 0;int len=0,code,diff=0;
     int rf,ch;
     int r = img.rows -1,c = img.cols;
 
+    //Retrieve Key from Image
     rf = pData[r*c*cn];
     ch = pData[r*c*cn+1];
-    pVal = pData[r*c*cn+2];
+    code = pData[r*c*cn+2];
     int dM = pData[r*c*cn+3];
 
     int j=4;
@@ -77,7 +88,7 @@ int main(int argc, char** argv)
     {
         for(int j = 0; j < img.cols; j++)
         {   
-            if(pData[i*img.cols*cn + j*cn + rf]==pVal)
+            if(pData[i*img.cols*cn + j*cn + rf]==code)
             {
                 if(pData[i*img.cols*cn + j*cn + ch]%2==0)
                     bin.push_back('0');
@@ -94,16 +105,6 @@ int main(int argc, char** argv)
             break;
     }
     
-
-    FILE *file = fopen("store.txt","r");
-    std::string mes;char ct;
-    while(1)
-    {
-        ct=fgetc(file);
-        if(feof(file)) break;
-        mes+=ct;
-    }
-
     bin=StringToAscii(bin);
     std::cout<<bin;
     return 0;
