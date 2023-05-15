@@ -1,6 +1,6 @@
 # Image and Video Steganography using LSB Algorithm with a variation
 
-In this project, I have tried to implement Image and vide steganography using a variation of LSB algorithm. In LSB algorithm, the least significant bit of color code of the pixel is modified to store the message. For example, if we want to store 'A' in the image, then we will find the binary equivalent of its ascii and the generated 8 bits which will be replaced by the 8 bits of the color codes of pixels of the image. Refer follow figure. 
+In this project, I have tried to implement Image and video steganography using a variation of LSB algorithm. In LSB algorithm, the least significant bit of color code of the pixel is modified to store the message. For example, if we want to store 'A' in the image, then we will find the binary equivalent of its ascii and the generated 8 bits which will be replaced by the 8 bits of the color codes of pixels of the image. Refer follow figure. 
 
 <p align="center">
 <img src="https://github.com/PratikMahajan50/ImageAndVideoSteganography/blob/main/LSBAlgo.png" width="450">
