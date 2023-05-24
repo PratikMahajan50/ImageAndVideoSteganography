@@ -7,8 +7,7 @@ In this project, I have tried to implement Image and video steganography using a
 </p>
 
 In this project, rather than storing the bits in the continuous manner, I have created an algorithm that will store the values in some pattern and generate a key which can be used to decode the message back. Algorithm is explained below.
-
-
+So far I have completely implemented the Image steganography part using C++ along with the OpenCV library. The video steganography is yet to be implemented.
 ## Algorithm to hide the data in image
 
 1. Find out the occurences of all the color codes(0-255) for each color channel(BGR) by scanning through all the pixels of the image and store their frequency in an array(count[3][255]).
@@ -29,3 +28,19 @@ In this project, rather than storing the bits in the continuous manner, I have c
 1. Use the genearated key to retrieve the required parameteres.
 2. Scan the image pixel by pixe. If the color code of reference channel of current pixel matches the color code retrieved by the key, then store the lsb of that code in an array(bArray).
 3. Convert the binary array to integer array of ascii and convert this array to string of characters.
+
+## Algorithm to hide data in Video
+
+1. Find out the number of bits to be stored in the video(length_of_message X 8).
+2. Find out the number of bits to be stored in single frame(bits_length/no_of_frames).
+3. Traverse through the first 5 frames of the video to find out the dominant/storable reference channel and code. Randomly choose the change channel among the rest.
+4. Store the bits in all the frames using the reference channel and change channel. This can be done using multithreading on multiple threads simultaneously.
+5. Generate the key accordingly.
+
+## Algorithm to retrieve the data from the image
+
+1. Use the genearated key to retrieve the required parameteres.
+2. Retrieve the data from the frames using the same technique used to extract data from image in above algorithm.
+3. Convert binary bits to the string of characters.
+
+
